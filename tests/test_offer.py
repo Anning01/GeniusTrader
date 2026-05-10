@@ -40,12 +40,14 @@ def test_最后阶段报价高于均值():
 
 
 def test_还价在接受区间内():
-    # 前期阶段接受区间：报价 × [0.85, 1.30]
-    assert is_counter_offer_acceptable(offer=500, counter=450, remaining_count=20) is True
+    # 还价必须 > 报价且 ≤ 报价×1.30（前期上限）
+    assert is_counter_offer_acceptable(offer=500, counter=501, remaining_count=20) is True
     assert is_counter_offer_acceptable(offer=500, counter=600, remaining_count=20) is True
 
 
 def test_还价过低被拒绝():
+    # counter ≤ offer → 拒绝
+    assert is_counter_offer_acceptable(offer=500, counter=500, remaining_count=20) is False
     assert is_counter_offer_acceptable(offer=500, counter=100, remaining_count=20) is False
 
 

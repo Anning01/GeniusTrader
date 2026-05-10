@@ -2,9 +2,9 @@
 import random
 
 BOX_VALUES = [
-    1, 5, 10, 20, 30, 50, 75, 100, 150, 200,
-    250, 300, 350, 400, 450, 500, 550, 600,
-    650, 700, 750, 800, 850, 900, 950, 1000
+    1, 2, 5, 10, 25, 50, 75, 100, 200, 300,
+    400, 500, 750, 1_000, 5_000, 10_000, 25_000, 50_000,
+    75_000, 100_000, 200_000, 300_000, 400_000, 500_000, 750_000, 1_000_000
 ]
 
 # 每轮开箱数量：6、5、4、3、2、之后每轮 1 个
@@ -22,6 +22,7 @@ def create_session() -> dict:
         "boxes_opened_this_round": 0,
         "offer_pending": False,
         "counter_offer_used": False,
+        "counter_accepted": False,
         "game_over": False,
         "last_offer": None,
         "accepted_offer": False,
@@ -51,6 +52,13 @@ def open_box(session: dict, box_id: int) -> dict:
         raise ValueError(f"{box_id} 号箱子已经被打开")
     box["opened"] = True
     session["boxes_opened_this_round"] += 1
-    if session["boxes_opened_this_round"] >= boxes_to_open_this_round(session["current_round"]):
-        session["offer_pending"] = True
+
+    # 如果只剩玩家箱子，游戏直接结束，不触发报价
+    remaining_non_player = sum(
+        1 for b in session["boxes"]
+        if not b["opened"] and b["id"] != session["player_box_id"]
+    )
+    if remaining_non_player > 0:
+        if session["boxes_opened_this_round"] >= boxes_to_open_this_round(session["current_round"]):
+            session["offer_pending"] = True
     return box

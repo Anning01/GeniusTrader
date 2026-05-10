@@ -35,8 +35,8 @@ function toggleHidden(id, hidden) { document.getElementById(id).classList.toggle
 function setAiMessage(msg) { document.getElementById('ai-message').textContent = msg; }
 
 function updateStats(session) {
-  document.getElementById('stat-potential').textContent  = session.potential_value  ?? '—';
-  document.getElementById('stat-intuition').textContent  = session.intuition_index  ?? '—';
+  document.getElementById('stat-potential').textContent  = session.potential_value != null ? fmt(session.potential_value) : '—';
+  document.getElementById('stat-intuition').textContent  = session.intuition_index ?? '—';
 }
 
 function updateProgress(session) {
@@ -47,6 +47,47 @@ function updateProgress(session) {
   document.getElementById('round-label').textContent        = `第 ${round} 轮`;
   document.getElementById('boxes-opened-label').textContent = `已开: ${opened} / ${needed}`;
   document.getElementById('remaining-label').textContent    = `剩余: ${remaining}`;
+}
+
+// ── 金额榜 ───────────────────────────────────────────────────
+const ALL_VALUES   = [1,2,5,10,25,50,75,100,200,300,400,500,750,1000,5000,10000,25000,50000,75000,100000,200000,300000,400000,500000,750000,1000000];
+const LEFT_VALUES  = ALL_VALUES.slice(0, 13);
+const RIGHT_VALUES = ALL_VALUES.slice(13);
+
+function fmt(v) {
+  if (v == null) return '—';
+  return '$' + Number(v).toLocaleString('en-US');
+}
+
+function fmtShort(v) {
+  if (v >= 1_000_000) return '$1M';
+  if (v >= 1_000)     return '$' + (v / 1000) + 'K';
+  return '$' + v;
+}
+
+function renderValueBoard(session) {
+  // 已被开走的价值集合（含玩家箱子在游戏结束后的揭示值）
+  const eliminated = new Set(
+    session.boxes
+      .filter(b => b.opened && b.value !== undefined)
+      .map(b => b.value)
+  );
+
+  function buildPanel(panelId, values, tier) {
+    const panel = document.getElementById(panelId);
+    if (!panel) return;
+    panel.innerHTML = '';
+    values.forEach(v => {
+      const el = document.createElement('div');
+      el.className = `value-item ${tier}`;
+      if (eliminated.has(v)) el.classList.add('eliminated');
+      el.textContent = fmtShort(v);
+      panel.appendChild(el);
+    });
+  }
+
+  buildPanel('value-panel-left',  LEFT_VALUES,  'low');
+  buildPanel('value-panel-right', RIGHT_VALUES, 'high');
 }
 
 // ── 箱子网格渲染 ──────────────────────────────────────────────
@@ -81,6 +122,7 @@ async function startNewGame() {
     STATE.session   = data;
     show('screen-game');
     renderBoxes(data);
+    renderValueBoard(data);
     updateProgress(data);
     setAiMessage('从 26 个神秘箱子中，选择一个作为你的箱子！');
     document.getElementById('btn-continue').disabled         = true;
@@ -99,6 +141,7 @@ async function handleBoxClick(boxId) {
       const data = await API.post(`/api/game/${STATE.sessionId}/select`, { box_id: boxId });
       STATE.session = data;
       renderBoxes(data);
+      renderValueBoard(data);
       setAiMessage(`你选择了 ${boxId} 号箱子！点击其他箱子开始探索，或点击「继续开箱」随机开启。`);
       document.getElementById('btn-continue').disabled  = false;
       document.getElementById('btn-my-box').textContent = `我的箱子 · ${boxId} 号`;
@@ -119,12 +162,14 @@ async function openSingleBox(boxId) {
     // 开箱动画
     const el = document.querySelector(`.box-item[data-id="${boxId}"]`);
     if (el) el.classList.add('opening');
-    setTimeout(() => renderBoxes(data), 420);
+    setTimeout(() => { renderBoxes(data); renderValueBoard(data); }, 420);
 
     updateProgress(data);
     updateStats(data);
 
-    if (data.offer_pending) {
+    if (data.game_over) {
+      setTimeout(() => showSettlement(data), 600);
+    } else if (data.offer_pending) {
       document.getElementById('btn-continue').disabled = true;
       setTimeout(() => showOffer(data), 950);
     }
@@ -160,13 +205,14 @@ function getPhaseKey(session) {
 }
 
 function estimateGuaranteedTitle(session) {
-  if (session.current_round <= 2) return '策略专家';
-  if (session.current_round >= 6) return '市场大师';
-  return '幸运交易师';
+  if (session.current_round === 0) return '闪电决断者';
+  if (session.current_round <= 3) return '精准猎手';
+  if (session.current_round >= 5) return '卧龙待醒';
+  return '随遇而安者';
 }
 
 function showOffer(session) {
-  document.getElementById('offer-amount').textContent      = session.last_offer;
+  document.getElementById('offer-amount').textContent      = fmt(session.last_offer);
   document.getElementById('offer-ai-message').textContent  = AI报价文案[getPhaseKey(session)];
   document.getElementById('offer-guaranteed-title').textContent =
     `保底称号：${estimateGuaranteedTitle(session)}`;
@@ -176,8 +222,13 @@ function showOffer(session) {
   counterBtn.textContent = session.counter_offer_used
     ? '还价机会已用完' : '还价（剩 1 次机会）';
 
+  const input = document.getElementById('counter-amount');
+  input.min   = session.last_offer + 1;
+  input.step  = 1;
+  input.value = '';
+  input.placeholder = `输入还价金额（最少 ${fmt(session.last_offer + 1)}）`;
+
   toggleHidden('counter-input-area', true);
-  document.getElementById('counter-amount').value = '';
   showModal('modal-offer');
 }
 
@@ -201,6 +252,7 @@ async function rejectOffer() {
       showSettlement(data);
     } else {
       renderBoxes(data);
+      renderValueBoard(data);
       updateProgress(data);
       document.getElementById('btn-continue').disabled = false;
       setAiMessage('继续探索！点击任意箱子或「继续开箱」。');
@@ -212,7 +264,11 @@ async function rejectOffer() {
 
 async function submitCounter() {
   const amount = parseInt(document.getElementById('counter-amount').value, 10);
-  if (!amount || amount <= 0) { alert('请输入有效的还价金额'); return; }
+  const minAmount = STATE.session.last_offer + 1;
+  if (!amount || amount < minAmount) {
+    alert(`还价金额必须高于当前报价 ${fmt(STATE.session.last_offer)}`);
+    return;
+  }
   try {
     const data = await API.post(`/api/game/${STATE.sessionId}/counter`, { amount });
     STATE.session = data;
@@ -223,7 +279,7 @@ async function submitCounter() {
     } else {
       document.getElementById('counter-result-title').textContent   = '还价未成功 😔';
       document.getElementById('counter-result-message').textContent =
-        `AI 交易官拒绝了你的 ${amount} 报价。\n原报价 ${data.last_offer} 仍然有效，你可选择接受或继续开箱。`;
+        `AI 交易官拒绝了你的 ${fmt(amount)} 还价。原报价 ${fmt(data.last_offer)} 仍然有效，你可选择接受或继续开箱。`;
       showModal('modal-counter-result');
     }
   } catch (e) {
@@ -234,29 +290,37 @@ async function submitCounter() {
 // ── 结算界面 ──────────────────────────────────────────────────
 function showSettlement(session, titleInfo = null) {
   const info = titleInfo || { name: session.final_title, description: '', icon: '🎖️' };
-  document.getElementById('settlement-title-icon').textContent = info.icon || '🎖️';
-  document.getElementById('settlement-title-name').textContent = info.name || session.final_title;
-  document.getElementById('settlement-title-desc').textContent = info.description || '';
+  const isHidden = !!info.hidden;
+  const banner = document.querySelector('.title-unlock-banner');
+  const label  = document.getElementById('settlement-title-label');
+  banner.classList.toggle('hidden-achievement', isHidden);
+  label.classList.toggle('hidden-label', isHidden);
+  label.textContent = isHidden ? '🔓 隐藏成就解锁' : '新称号解锁';
+
+  document.getElementById('settlement-title-icon').textContent    = info.icon || '🎖️';
+  document.getElementById('settlement-title-name').textContent    = info.name || session.final_title;
+  document.getElementById('settlement-title-tagline').textContent = info.tagline || '';
+  document.getElementById('settlement-title-desc').textContent    = info.description || '';
 
   const playerBox = session.boxes.find(b => b.id === session.player_box_id);
-  document.getElementById('settle-box-value').textContent   = playerBox?.value ?? '—';
+  document.getElementById('settle-box-value').textContent   = playerBox?.value != null ? fmt(playerBox.value) : '—';
   document.getElementById('settle-intuition').textContent   =
     session.intuition_index != null ? `${session.intuition_index} / 100` : '—';
   document.getElementById('settle-negotiation').textContent =
     session.counter_offer_used ? '主动还价' : session.accepted_offer ? '接受报价' : '坚守到底';
   document.getElementById('settle-deal').textContent        =
     session.accepted_offer
-      ? `${session.last_offer} 点潜力（报价成交）`
-      : `${playerBox?.value ?? '—'} 点潜力（自选箱子）`;
+      ? `${fmt(session.last_offer)}（报价成交）`
+      : `${playerBox?.value != null ? fmt(playerBox.value) : '—'}（自选箱子）`;
 
   updateStats(session);
+  renderValueBoard(session);
   show('screen-settlement');
 }
 
 // ── 事件绑定 ──────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-start').addEventListener('click', startNewGame);
-  document.getElementById('btn-quick').addEventListener('click', startNewGame);
   document.getElementById('btn-continue').addEventListener('click', handleContinue);
   document.getElementById('btn-accept').addEventListener('click', acceptOffer);
   document.getElementById('btn-reject').addEventListener('click', rejectOffer);

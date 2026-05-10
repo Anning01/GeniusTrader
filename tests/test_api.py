@@ -109,6 +109,23 @@ def test_还价过高被拒绝():
     assert resp2.json()["game_over"] is False  # 原报价仍待处理
 
 
+def test_最后一箱打开时直接结算无报价():
+    resp = client.post("/api/game/new")
+    sid = resp.json()["session_id"]
+    client.post(f"/api/game/{sid}/select", json={"box_id": 1})
+    # 拒绝所有报价，开完全部非玩家箱子
+    for box_id in range(2, 27):
+        state = client.get(f"/api/game/{sid}/state").json()
+        if state["game_over"]:
+            break
+        if state["offer_pending"]:
+            client.post(f"/api/game/{sid}/reject")
+        client.post(f"/api/game/{sid}/open", json={"box_id": box_id})
+    final = client.get(f"/api/game/{sid}/state").json()
+    assert final["game_over"] is True
+    assert final["offer_pending"] is False
+
+
 def test_第二次还价返回400():
     resp = client.post("/api/game/new")
     sid = resp.json()["session_id"]

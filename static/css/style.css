@@ -109,11 +109,39 @@ body {
   color: var(--text-primary);
 }
 
+/* ── 游戏主区（三列：金额榜 | 箱子 | 金额榜）────────── */
+.game-main {
+  display: flex; flex: 1; overflow: hidden;
+}
+
+/* 金额榜侧栏 */
+.value-panel {
+  width: 58px; flex-shrink: 0;
+  display: flex; flex-direction: column;
+  justify-content: space-evenly; align-items: center;
+  padding: 10px 0; background: var(--bg-dark);
+  overflow: hidden;
+}
+
+.value-item {
+  font-size: 0.62rem; font-weight: 700;
+  line-height: 1; text-align: center;
+  padding: 3px 2px; width: 100%;
+  transition: opacity 0.4s, color 0.4s;
+}
+.value-item.low  { color: #60a5fa; }   /* 蓝色：低13档 */
+.value-item.high { color: var(--gold); } /* 金色：高13档 */
+.value-item.eliminated {
+  opacity: 0.22;
+  text-decoration: line-through;
+  text-decoration-color: currentColor;
+}
+
 /* ── 箱子网格 ─────────────────────────────────────────── */
 .boxes-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 7px; padding: 10px 12px;
+  gap: 7px; padding: 10px 8px;
   flex: 1; align-content: start; overflow-y: auto;
 }
 
@@ -151,6 +179,13 @@ body {
 .game-footer {
   display: flex; gap: 10px; padding: 10px 14px;
   background: var(--bg-card); border-top: var(--border-gold); flex-shrink: 0;
+}
+.game-footer .btn-info {
+  flex: 0 0 auto; width: auto; padding: 14px 12px;
+  white-space: nowrap; font-size: 0.82rem;
+}
+.game-footer .btn-primary {
+  flex: 1; width: auto;
 }
 
 /* ── 弹窗 ─────────────────────────────────────────────── */
@@ -238,10 +273,27 @@ body {
   border: 2px solid var(--gold); border-radius: 20px;
   margin: 0 20px 20px; padding: 22px; text-align: center;
   box-shadow: var(--shadow-gold);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.title-unlock-banner.hidden-achievement {
+  background: linear-gradient(135deg, #1a1000, #2a1800);
+  border-color: var(--gold-light);
+  box-shadow: 0 0 40px rgba(255,215,0,0.45), 0 0 80px rgba(255,215,0,0.15);
+  animation: shimmer 2.5s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0%, 100% { box-shadow: 0 0 40px rgba(255,215,0,0.45), 0 0 80px rgba(255,215,0,0.15); }
+  50%       { box-shadow: 0 0 60px rgba(255,215,0,0.70), 0 0 120px rgba(255,215,0,0.25); }
+}
+.title-label.hidden-label {
+  color: var(--gold-light);
+  font-weight: 700;
+  letter-spacing: 0.1em;
 }
 .title-icon  { font-size: 3rem; margin-bottom: 6px; }
 .title-label { font-size: 0.72rem; color: var(--text-secondary); margin-bottom: 4px; letter-spacing: 0.06em; }
 .title-name  { font-size: 1.6rem; font-weight: 900; color: var(--gold); }
+.title-tagline { font-size: 0.88rem; color: var(--gold-light); margin-top: 6px; font-style: italic; opacity: 0.85; }
 .title-description { font-size: 0.82rem; color: var(--text-secondary); margin-top: 10px; line-height: 1.6; }
 
 .settlement-stats { padding: 0 20px 20px; }

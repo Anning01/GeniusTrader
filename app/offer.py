@@ -9,12 +9,12 @@ FLOAT_RANGES = {
     "final": (0.10,  0.35),   # 最后：+10% ~ +35%
 }
 
-# 各阶段可接受还价区间（相对于 AI 报价）
+# 各阶段还价接受上限（还价必须严格高于报价，且不超过此倍数）
 COUNTER_RANGES = {
-    "early": (0.85, 1.30),
-    "mid":   (0.88, 1.35),
-    "late":  (0.90, 1.38),
-    "final": (0.92, 1.40),
+    "early": 1.30,
+    "mid":   1.35,
+    "late":  1.38,
+    "final": 1.40,
 }
 
 
@@ -39,7 +39,8 @@ def calculate_offer(remaining_values: list[int]) -> int:
 
 
 def is_counter_offer_acceptable(offer: int, counter: int, remaining_count: int) -> bool:
-    """判断玩家还价是否在 AI 可接受区间内。"""
-    phase = get_phase(remaining_count)
-    lo_ratio, hi_ratio = COUNTER_RANGES[phase]
-    return offer * lo_ratio <= counter <= offer * hi_ratio
+    """还价必须严格高于报价，且不超过当前阶段上限倍数。"""
+    if counter <= offer:
+        return False
+    hi_ratio = COUNTER_RANGES[get_phase(remaining_count)]
+    return counter <= round(offer * hi_ratio)

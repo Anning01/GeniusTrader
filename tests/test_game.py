@@ -97,6 +97,19 @@ def test_本轮开完后触发报价():
     assert session["offer_pending"] is True
 
 
+def test_仅剩玩家箱子时不触发报价():
+    session = create_session()
+    select_player_box(session, 1)
+    # 开完所有非玩家箱子（手动清空轮次限制）
+    for box_id in range(2, 27):
+        if session["offer_pending"]:
+            session["offer_pending"] = False
+            session["current_round"] += 1
+            session["boxes_opened_this_round"] = 0
+        open_box(session, box_id)
+    assert session["offer_pending"] is False
+
+
 def test_报价结束后轮次递增():
     session = create_session()
     select_player_box(session, 1)

@@ -20,16 +20,22 @@
     </div>
     <div class="lobby-actions">
       <button id="btn-start" class="btn-primary">开始挑战</button>
-      <button id="btn-quick" class="btn-secondary">快速游戏 · 随机关卡</button>
     </div>
     <div class="lobby-titles-preview">
       <h3>热门称号</h3>
       <div class="title-chips">
-        <span class="title-chip">🔮 直觉大师</span>
-        <span class="title-chip">📈 市场大师</span>
-        <span class="title-chip">🎯 策略专家</span>
-        <span class="title-chip">🤝 谈判高手</span>
-        <span class="title-chip">🍀 幸运交易师</span>
+        <span class="title-chip">🔮 天启交易师</span>
+        <span class="title-chip">💎 意志砥柱</span>
+        <span class="title-chip">🎯 精准猎手</span>
+        <span class="title-chip">⚡ 闪电决断者</span>
+        <span class="title-chip">🤝 谈判艺术家</span>
+        <span class="title-chip">💡 直觉信徒</span>
+        <span class="title-chip">🐉 卧龙待醒</span>
+        <span class="title-chip">🦅 孤胆英雄</span>
+        <span class="title-chip">🎭 戏剧制造者</span>
+        <span class="title-chip">🃏 赌徒哲学家</span>
+        <span class="title-chip">🌸 淡然成交者</span>
+        <span class="title-chip">🌊 随遇而安者</span>
       </div>
     </div>
   </div>
@@ -60,7 +66,11 @@
       <div id="ai-message" class="ai-bubble">从 26 个神秘箱子中，选择一个作为你的箱子！</div>
     </div>
 
-    <div id="boxes-grid" class="boxes-grid"></div>
+    <div class="game-main">
+      <div class="value-panel" id="value-panel-left"></div>
+      <div id="boxes-grid" class="boxes-grid"></div>
+      <div class="value-panel" id="value-panel-right"></div>
+    </div>
 
     <div class="game-footer">
       <button id="btn-my-box" class="btn-info" disabled>我的箱子</button>
@@ -111,8 +121,9 @@
     </div>
     <div class="title-unlock-banner">
       <div class="title-icon" id="settlement-title-icon">🎖️</div>
-      <div class="title-label">新称号解锁</div>
+      <div class="title-label" id="settlement-title-label">新称号解锁</div>
       <div class="title-name" id="settlement-title-name">—</div>
+      <div class="title-tagline" id="settlement-title-tagline">—</div>
       <div class="title-description" id="settlement-title-desc">—</div>
     </div>
     <div class="settlement-stats">

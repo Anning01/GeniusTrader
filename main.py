@@ -62,6 +62,7 @@ def _finalize_game(session: dict, accepted_offer: bool) -> None:
         intuition_index=session["intuition_index"],
         accepted_offer=accepted_offer,
         counter_offered=session["counter_offer_used"],
+        counter_accepted=session.get("counter_accepted", False),
         rounds_played=session["current_round"],
     )
 
@@ -139,8 +140,14 @@ async def 开箱(session_id: str, body: OpenBoxRequest):
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-    # 本轮开完后生成 AI 报价
-    if session["offer_pending"]:
+    # 只剩玩家箱子 → 直接结算，不报价
+    remaining_non_player = [
+        b for b in session["boxes"]
+        if not b["opened"] and b["id"] != session["player_box_id"]
+    ]
+    if len(remaining_non_player) == 0:
+        _finalize_game(session, accepted_offer=False)
+    elif session["offer_pending"]:
         remaining = _remaining_values(session)
         session["last_offer"] = calculate_offer(remaining)
 
@@ -191,6 +198,7 @@ async def 还价(session_id: str, body: CounterOfferRequest):
     )
     result: dict = {"counter_accepted": accepted}
     if accepted:
+        session["counter_accepted"] = True
         session["offer_pending"] = False
         session["last_offer"] = body.amount
         _finalize_game(session, accepted_offer=True)
