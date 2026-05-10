@@ -96,7 +96,7 @@ def _public_session(session: dict, session_id: str) -> dict:
 
 @app.get("/")
 async def 首页(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request, "index.html")
 
 
 # ── API 路由 ──────────────────────────────────────────────────

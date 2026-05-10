@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>天才交易员</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <!-- ── 大厅界面 ─────────────────────────────────────── -->
+  <div id="screen-lobby" class="screen active">
+    <div class="lobby-header">
+      <h1 class="game-logo">天才<span>交易员</span></h1>
+      <p class="lobby-subtitle">靠直觉，赢称号</p>
+    </div>
+    <div class="lobby-box-preview">
+      <div class="box-preview-icon">🎁</div>
+      <p class="box-preview-label">26 个神秘箱子等你探索</p>
+    </div>
+    <div class="lobby-actions">
+      <button id="btn-start" class="btn-primary">开始挑战</button>
+      <button id="btn-quick" class="btn-secondary">快速游戏 · 随机关卡</button>
+    </div>
+    <div class="lobby-titles-preview">
+      <h3>热门称号</h3>
+      <div class="title-chips">
+        <span class="title-chip">🔮 直觉大师</span>
+        <span class="title-chip">📈 市场大师</span>
+        <span class="title-chip">🎯 策略专家</span>
+        <span class="title-chip">🤝 谈判高手</span>
+        <span class="title-chip">🍀 幸运交易师</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 游戏界面 ─────────────────────────────────────── -->
+  <div id="screen-game" class="screen">
+    <header class="game-header">
+      <div class="game-stats">
+        <div class="stat">
+          <span class="stat-label">潜力值</span>
+          <span id="stat-potential" class="stat-value">—</span>
+        </div>
+        <div class="game-logo-sm">天才交易员</div>
+        <div class="stat">
+          <span class="stat-label">直觉指数</span>
+          <span id="stat-intuition" class="stat-value">—</span>
+        </div>
+      </div>
+      <div class="round-progress">
+        <span id="round-label">第 1 轮</span>
+        <span id="boxes-opened-label">已开: 0 / 6</span>
+        <span id="remaining-label">剩余: 25</span>
+      </div>
+    </header>
+
+    <div class="ai-section">
+      <div class="ai-avatar">🤵</div>
+      <div id="ai-message" class="ai-bubble">从 26 个神秘箱子中，选择一个作为你的箱子！</div>
+    </div>
+
+    <div id="boxes-grid" class="boxes-grid"></div>
+
+    <div class="game-footer">
+      <button id="btn-my-box" class="btn-info" disabled>我的箱子</button>
+      <button id="btn-continue" class="btn-primary" disabled>继续开箱</button>
+    </div>
+  </div>
+
+  <!-- ── 弹窗：AI 报价 ──────────────────────────────── -->
+  <div id="modal-offer" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>AI 交易官考虑中…</h2>
+        <p id="offer-ai-message">基于当前局势，给出一个特别的报价！</p>
+      </div>
+      <div class="offer-amount-card">
+        <div class="offer-label">当前报价（直觉加成）</div>
+        <div id="offer-amount" class="offer-amount">—</div>
+        <div id="offer-guaranteed-title" class="offer-guaranteed">保底称号：—</div>
+      </div>
+      <div class="modal-actions">
+        <button id="btn-accept" class="btn-accept">接受 Deal ✓</button>
+        <button id="btn-reject" class="btn-reject">继续 No Deal →</button>
+      </div>
+      <div id="counter-offer-section" class="counter-offer-section">
+        <button id="btn-show-counter" class="btn-counter-toggle">还价（剩 1 次机会）</button>
+        <div id="counter-input-area" class="counter-input-area hidden">
+          <input id="counter-amount" type="number" placeholder="输入还价金额" class="counter-input">
+          <button id="btn-submit-counter" class="btn-submit-counter">提交</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 弹窗：还价结果 ─────────────────────────────── -->
+  <div id="modal-counter-result" class="modal hidden">
+    <div class="modal-content">
+      <h2 id="counter-result-title" style="color:#f0b942;text-align:center;margin-bottom:16px"></h2>
+      <p id="counter-result-message" style="color:#94a3b8;text-align:center;margin-bottom:24px;line-height:1.5"></p>
+      <button id="btn-counter-result-ok" class="btn-primary">好的</button>
+    </div>
+  </div>
+
+  <!-- ── 结算界面 ─────────────────────────────────────── -->
+  <div id="screen-settlement" class="screen">
+    <div class="settlement-header">
+      <h2>本局结算</h2>
+      <p class="settlement-subtitle">交易之路又进一阶！</p>
+    </div>
+    <div class="title-unlock-banner">
+      <div class="title-icon" id="settlement-title-icon">🎖️</div>
+      <div class="title-label">新称号解锁</div>
+      <div class="title-name" id="settlement-title-name">—</div>
+      <div class="title-description" id="settlement-title-desc">—</div>
+    </div>
+    <div class="settlement-stats">
+      <div class="stat-row">
+        <span class="stat-row-label">你的箱子价值</span>
+        <span id="settle-box-value" class="stat-row-value gold">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-row-label">直觉指数</span>
+        <span id="settle-intuition" class="stat-row-value">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-row-label">谈判表现</span>
+        <span id="settle-negotiation" class="stat-row-value">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-row-label">最终成交</span>
+        <span id="settle-deal" class="stat-row-value">—</span>
+      </div>
+    </div>
+    <div class="settlement-actions">
+      <button id="btn-play-again" class="btn-primary">再来一局</button>
+    </div>
+  </div>
+
+  <script src="/static/js/game.js"></script>
+</body>
+</html>
