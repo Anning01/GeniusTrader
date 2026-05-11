@@ -66,28 +66,7 @@ function fmtShort(v) {
 }
 
 function renderValueBoard(session) {
-  // 已被开走的价值集合（含玩家箱子在游戏结束后的揭示值）
-  const eliminated = new Set(
-    session.boxes
-      .filter(b => b.opened && b.value !== undefined)
-      .map(b => b.value)
-  );
-
-  function buildPanel(panelId, values, tier) {
-    const panel = document.getElementById(panelId);
-    if (!panel) return;
-    panel.innerHTML = '';
-    values.forEach(v => {
-      const el = document.createElement('div');
-      el.className = `value-item ${tier}`;
-      if (eliminated.has(v)) el.classList.add('eliminated');
-      el.textContent = fmtShort(v);
-      panel.appendChild(el);
-    });
-  }
-
-  buildPanel('value-panel-left',  LEFT_VALUES,  'low');
-  buildPanel('value-panel-right', RIGHT_VALUES, 'high');
+  renderValueBoardInto(session, 'value-panel-left', 'value-panel-right');
 }
 
 // ── 箱子网格渲染 ──────────────────────────────────────────────
@@ -101,11 +80,11 @@ function renderBoxes(session) {
 
     if (box.id === session.player_box_id) {
       el.classList.add('selected');
-      el.innerHTML = `<span class="box-number">${box.id}</span><span class="box-value">我的</span>`;
+      el.innerHTML = `<span class="box-number">${box.id}</span><span class="box-my-label">我的箱子</span>`;
     } else if (box.opened) {
       el.classList.add('opened');
-      const val = box.value !== undefined ? box.value : '';
-      el.innerHTML = `<span class="box-opened-check">✓</span><span class="box-value">${val}</span>`;
+      const valStr = box.value !== undefined ? fmtShort(box.value) : '';
+      el.innerHTML = `<span class="box-value">${valStr}</span>`;
     } else {
       el.innerHTML = `<span class="box-number">${box.id}</span>`;
       el.addEventListener('click', () => handleBoxClick(box.id));
@@ -310,12 +289,37 @@ function showSettlement(session, titleInfo = null) {
     session.counter_offer_used ? '主动还价' : session.accepted_offer ? '接受报价' : '坚守到底';
   document.getElementById('settle-deal').textContent        =
     session.accepted_offer
-      ? `${fmt(session.last_offer)}（报价成交）`
-      : `${playerBox?.value != null ? fmt(playerBox.value) : '—'}（自选箱子）`;
+      ? `${fmt(session.last_offer)}（报价）`
+      : `${playerBox?.value != null ? fmt(playerBox.value) : '—'}（开箱）`;
 
   updateStats(session);
-  renderValueBoard(session);
+
+  // 结算页双列金额榜
+  renderValueBoardInto(session, 'value-panel-left-settle', 'value-panel-right-settle');
+
   show('screen-settlement');
+}
+
+function renderValueBoardInto(session, leftId, rightId) {
+  const eliminated = new Set(
+    session.boxes
+      .filter(b => b.opened && b.value !== undefined)
+      .map(b => b.value)
+  );
+  function buildPanel(panelId, values, tier) {
+    const panel = document.getElementById(panelId);
+    if (!panel) return;
+    panel.innerHTML = '';
+    values.forEach(v => {
+      const el = document.createElement('div');
+      el.className = `value-item ${tier}`;
+      if (eliminated.has(v)) el.classList.add('eliminated');
+      el.textContent = fmtShort(v);
+      panel.appendChild(el);
+    });
+  }
+  buildPanel(leftId,  LEFT_VALUES,  'low');
+  buildPanel(rightId, RIGHT_VALUES, 'high');
 }
 
 // ── 事件绑定 ──────────────────────────────────────────────────

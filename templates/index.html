@@ -10,19 +10,34 @@
 
   <!-- ── 大厅界面 ─────────────────────────────────────── -->
   <div id="screen-lobby" class="screen active">
-    <div class="lobby-header">
-      <h1 class="game-logo">天才<span>交易员</span></h1>
-      <p class="lobby-subtitle">靠直觉，赢称号</p>
+    <div class="lobby-hero">
+      <div class="lobby-deco">
+        <span class="deco-box deco-box-1">💼</span>
+        <span class="deco-box deco-box-2">💰</span>
+        <span class="deco-box deco-box-3">🎁</span>
+        <span class="deco-box deco-box-4">💎</span>
+        <span class="deco-box deco-box-5">✨</span>
+      </div>
+      <div class="lobby-logo-wrap">
+        <h1 class="game-logo">天才<span>交易员</span></h1>
+        <p class="lobby-subtitle">靠直觉，赢称号</p>
+      </div>
     </div>
-    <div class="lobby-box-preview">
-      <div class="box-preview-icon">🎁</div>
-      <p class="box-preview-label">26 个神秘箱子等你探索</p>
+
+    <div class="lobby-card">
+      <div class="lobby-card-icon">🎁</div>
+      <div class="lobby-card-text">
+        <strong>26 个神秘箱子</strong>
+        <span>$1 到 $1,000,000 随机藏匿</span>
+      </div>
     </div>
+
     <div class="lobby-actions">
-      <button id="btn-start" class="btn-primary">开始挑战</button>
+      <button id="btn-start" class="btn-primary btn-glow">开始挑战</button>
     </div>
+
     <div class="lobby-titles-preview">
-      <h3>热门称号</h3>
+      <p class="lobby-titles-label">解锁专属称号 · 分享朋友圈</p>
       <div class="title-chips">
         <span class="title-chip">🔮 天启交易师</span>
         <span class="title-chip">💎 意志砥柱</span>
@@ -33,9 +48,7 @@
         <span class="title-chip">🐉 卧龙待醒</span>
         <span class="title-chip">🦅 孤胆英雄</span>
         <span class="title-chip">🎭 戏剧制造者</span>
-        <span class="title-chip">🃏 赌徒哲学家</span>
-        <span class="title-chip">🌸 淡然成交者</span>
-        <span class="title-chip">🌊 随遇而安者</span>
+        <span class="title-chip chip-hint">🤑 ??? 隐藏成就</span>
       </div>
     </div>
   </div>
@@ -48,7 +61,7 @@
           <span class="stat-label">潜力值</span>
           <span id="stat-potential" class="stat-value">—</span>
         </div>
-        <div class="game-logo-sm">天才交易员</div>
+        <div class="game-logo-sm">天才<span>交易员</span></div>
         <div class="stat">
           <span class="stat-label">直觉指数</span>
           <span id="stat-intuition" class="stat-value">—</span>
@@ -82,17 +95,18 @@
   <div id="modal-offer" class="modal hidden">
     <div class="modal-content">
       <div class="modal-header">
-        <h2>AI 交易官考虑中…</h2>
+        <div class="modal-avatar">🤵</div>
+        <h2>AI 交易官出价</h2>
         <p id="offer-ai-message">基于当前局势，给出一个特别的报价！</p>
       </div>
       <div class="offer-amount-card">
-        <div class="offer-label">当前报价（直觉加成）</div>
+        <div class="offer-label">当前报价</div>
         <div id="offer-amount" class="offer-amount">—</div>
         <div id="offer-guaranteed-title" class="offer-guaranteed">保底称号：—</div>
       </div>
       <div class="modal-actions">
-        <button id="btn-accept" class="btn-accept">接受 Deal ✓</button>
-        <button id="btn-reject" class="btn-reject">继续 No Deal →</button>
+        <button id="btn-accept" class="btn-accept">✓ 接受 Deal</button>
+        <button id="btn-reject" class="btn-reject">No Deal →</button>
       </div>
       <div id="counter-offer-section" class="counter-offer-section">
         <button id="btn-show-counter" class="btn-counter-toggle">还价（剩 1 次机会）</button>
@@ -107,45 +121,63 @@
   <!-- ── 弹窗：还价结果 ─────────────────────────────── -->
   <div id="modal-counter-result" class="modal hidden">
     <div class="modal-content">
-      <h2 id="counter-result-title" style="color:#f0b942;text-align:center;margin-bottom:16px"></h2>
-      <p id="counter-result-message" style="color:#94a3b8;text-align:center;margin-bottom:24px;line-height:1.5"></p>
-      <button id="btn-counter-result-ok" class="btn-primary">好的</button>
+      <div class="counter-result-icon" id="counter-result-icon">😔</div>
+      <h2 id="counter-result-title" class="counter-result-title"></h2>
+      <p id="counter-result-message" class="counter-result-message"></p>
+      <button id="btn-counter-result-ok" class="btn-primary">好的，继续</button>
     </div>
   </div>
 
   <!-- ── 结算界面 ─────────────────────────────────────── -->
   <div id="screen-settlement" class="screen">
-    <div class="settlement-header">
-      <h2>本局结算</h2>
-      <p class="settlement-subtitle">交易之路又进一阶！</p>
+    <!-- 分享卡片区域（截图此处分享朋友圈） -->
+    <div class="share-card" id="share-card">
+      <div class="share-card-header">
+        <span class="share-card-game">天才交易员</span>
+        <span class="share-card-tag">我的交易结果</span>
+      </div>
+
+      <div class="title-unlock-banner">
+        <div class="title-icon" id="settlement-title-icon">🎖️</div>
+        <div class="title-label" id="settlement-title-label">新称号解锁</div>
+        <div class="title-name" id="settlement-title-name">—</div>
+        <div class="title-tagline" id="settlement-title-tagline"></div>
+        <div class="title-description" id="settlement-title-desc"></div>
+      </div>
+
+      <div class="share-stats-grid">
+        <div class="share-stat">
+          <span class="share-stat-label">箱子价值</span>
+          <span class="share-stat-value gold" id="settle-box-value">—</span>
+        </div>
+        <div class="share-stat">
+          <span class="share-stat-label">直觉指数</span>
+          <span class="share-stat-value" id="settle-intuition">—</span>
+        </div>
+        <div class="share-stat">
+          <span class="share-stat-label">谈判风格</span>
+          <span class="share-stat-value" id="settle-negotiation">—</span>
+        </div>
+        <div class="share-stat">
+          <span class="share-stat-label">最终成交</span>
+          <span class="share-stat-value" id="settle-deal">—</span>
+        </div>
+      </div>
+
+      <div class="share-hint">📸 截图分享朋友圈，看看你的交易天赋！</div>
     </div>
-    <div class="title-unlock-banner">
-      <div class="title-icon" id="settlement-title-icon">🎖️</div>
-      <div class="title-label" id="settlement-title-label">新称号解锁</div>
-      <div class="title-name" id="settlement-title-name">—</div>
-      <div class="title-tagline" id="settlement-title-tagline">—</div>
-      <div class="title-description" id="settlement-title-desc">—</div>
-    </div>
-    <div class="settlement-stats">
-      <div class="stat-row">
-        <span class="stat-row-label">你的箱子价值</span>
-        <span id="settle-box-value" class="stat-row-value gold">—</span>
-      </div>
-      <div class="stat-row">
-        <span class="stat-row-label">直觉指数</span>
-        <span id="settle-intuition" class="stat-row-value">—</span>
-      </div>
-      <div class="stat-row">
-        <span class="stat-row-label">谈判表现</span>
-        <span id="settle-negotiation" class="stat-row-value">—</span>
-      </div>
-      <div class="stat-row">
-        <span class="stat-row-label">最终成交</span>
-        <span id="settle-deal" class="stat-row-value">—</span>
+
+    <!-- 金额榜回顾 -->
+    <div class="settlement-board-wrap">
+      <p class="settlement-board-label">本局金额榜回顾</p>
+      <div class="settlement-board">
+        <div class="value-panel" id="value-panel-left-settle"></div>
+        <div class="value-panel" id="value-panel-right-settle"></div>
       </div>
     </div>
+
     <div class="settlement-actions">
-      <button id="btn-play-again" class="btn-primary">再来一局</button>
+      <button id="btn-play-again" class="btn-primary btn-glow">再来一局</button>
     </div>
   </div>
 
